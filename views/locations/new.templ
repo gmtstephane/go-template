@@ -1,0 +1,16 @@
+package locations 
+
+import (
+	l "github.com/gmtstephane/go-template/views/layouts"
+	i "github.com/gmtstephane/go-template/views/components/icons"
+)
+
+templ New() {
+	@l.Dashboard() {
+		@l.Header(l.HeaderProps{
+			Icon:        i.Location(30),
+			Name:        "Nouveau Lieu",
+			Description: "Ajouter un nouveau lieu dans la base de données",
+		})
+	}
+}

@@ -1,0 +1,81 @@
+package table 
+
+type HeaderLabel templ.Component
+
+func Label(l string) HeaderLabel {
+	return label(l)
+}
+
+templ label(label string) {
+	<th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">{ label }</th>
+}
+
+type Descriptor interface {
+	Header() []HeaderLabel
+	Body() [][]templ.Component
+}
+
+templ Render(t Descriptor) {
+	<div class="px-4 sm:px-6 lg:px-8">
+		<div class="-mx-4 mt-8 sm:-mx-0">
+			<table class="min-w-full divide-y divide-gray-300">
+				<thead>
+					<tr>
+						for i,label:= range t.Header() {
+							switch i {
+								case 0:
+									<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
+										@label
+									</th>
+								case 1,2: 
+									<th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">
+										@label
+									</th>
+								case 3,4:
+									<th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">
+										@label
+									</th>
+								default:
+									<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+										@label
+									</th>
+							}
+						}
+						// <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+						// 	<span class="sr-only">Edit</span>
+						// </th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-200 bg-white">
+					for _, row := range t.Body() {
+						<tr>
+							for i,cell := range row {
+								switch i {
+									case 0:
+										<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+											@cell
+										</td>
+									case 1,2:
+										<td class="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 sm:table-cell">
+											@cell
+										</td>
+									case 3,4:
+										<td class="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 lg:table-cell">
+											@cell
+										</td>
+									default:
+										<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+											@cell
+										</td>
+								}
+							}
+							// <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+							// 	<a href="#" class="text-indigo-600 hover:text-indigo-900">Edit<span class="sr-only">, Lindsay Walton</span></a>
+							// </td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}

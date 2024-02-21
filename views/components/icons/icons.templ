@@ -1,0 +1,29 @@
+package icons 
+
+import "strconv"
+
+templ Team() {
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		class="h-6 w-6 text-gray-600 group-hover:text-indigo-600"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke-width="1.5"
+		stroke="currentColor"
+		aria-hidden="true"
+	><path d="M18 21a8 8 0 0 0-16 0"></path><circle cx="10" cy="8" r="5"></circle><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"></path></svg>
+}
+
+templ Location(size int) {
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		class=" text-gray-600 group-hover:text-indigo-600"
+		width={ strconv.Itoa(size) }
+		height={ strconv.Itoa(size) }
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke-width="1.5"
+		stroke="currentColor"
+		aria-hidden="true"
+	><path d="m12 8 6-3-6-3v10"></path><path d="m8 11.99-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4.86a1 1 0 0 0 0-1.74L16 12"></path><path d="m6.49 12.85 11.02 6.3"></path><path d="M17.51 12.85 6.5 19.15"></path></svg>
+}

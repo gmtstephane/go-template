@@ -1,0 +1,49 @@
+package locations 
+
+import (
+	l "github.com/gmtstephane/go-template/views/layouts"
+	c "github.com/gmtstephane/go-template/views/components"
+	"github.com/gmtstephane/go-template/views/components/icons"
+	"github.com/gmtstephane/go-template/views/components/table"
+	"github.com/gmtstephane/go-template/models"
+	"time"
+)
+
+type locationRenderer []models.Location
+
+func (locs locationRenderer) Header() []table.HeaderLabel {
+	return []table.HeaderLabel{
+		c.Text("Nom"),
+		c.Text("Région"),
+		c.Text("Ville"),
+		c.Text("ZipCode"),
+		c.Text("Créé le"),
+	}
+}
+
+func (locs locationRenderer) Body() (body [][]templ.Component) {
+	for _, loc := range locs {
+		body = append(body, []templ.Component{
+			c.Text(loc.Name),
+			c.Text(loc.State),
+			c.Text(loc.City),
+			c.Text(loc.Zipcode),
+			c.Text(loc.CreatedAt.Format(time.DateTime)),
+		},
+		)
+	}
+	return body
+}
+
+templ List(locs []models.Location) {
+	@l.Dashboard() {
+		@l.Header(l.HeaderProps{
+			Icon:        icons.Location(30),
+			Name:        "Lieux",
+			Description: "Liste des lieux enregistrés dans la base de données.",
+			Actions: []c.ButtonComponent{
+				c.Button("Nouveau").Link("/admin/locations/new")},
+		})
+		@table.Render(locationRenderer(locs))
+	}
+}

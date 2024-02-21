@@ -1,0 +1,42 @@
+package components
+
+func Button(t string, classes ...string) ButtonComponent {
+	return base(t, classes...)
+}
+
+type ButtonComponent struct {
+	templ.Component
+	text    string
+	classes []string
+	link    templ.SafeURL
+}
+
+func base(t string, classes ...string) ButtonComponent {
+	b := ButtonComponent{
+		text:    t,
+		classes: classes,
+	}
+	b.Component = b.render()
+	return b
+}
+
+func (b ButtonComponent) Link(l templ.SafeURL) ButtonComponent {
+	b.link = l
+	b.Component = b.render()
+	return b
+}
+
+templ (b ButtonComponent) render() {
+	if b.link != "" {
+		<a href={ b.link } class={ "rounded-md bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", b.classes }>
+			{ b.text }
+		</a>
+	} else {
+		<button
+			type="button"
+			class={ "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", b.classes, }
+		>
+			{ b.text }
+		</button>
+	}
+}
