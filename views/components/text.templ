@@ -1,0 +1,13 @@
+package components
+
+import "fmt"
+
+templ Text(s any) {
+	{ fmt.Sprintf("%v",s) }
+}
+
+templ SVG(s string) {
+	<div class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8">
+		@templ.Raw(s)
+	</div>
+}

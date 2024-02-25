@@ -1,13 +1,17 @@
 package table 
 
-type HeaderLabel templ.Component
+import "fmt"
+
+type HeaderLabel struct {
+	templ.Component
+}
 
 func Label(l string) HeaderLabel {
-	return label(l)
+	return HeaderLabel{Component: label(l)}
 }
 
 templ label(label string) {
-	<th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">{ label }</th>
+	{ label }
 }
 
 type Descriptor interface {
@@ -15,23 +19,23 @@ type Descriptor interface {
 	Body() [][]templ.Component
 }
 
-templ Render(t Descriptor) {
-	<div class="px-4 sm:px-6 lg:px-8">
-		<div class="-mx-4 mt-8 sm:-mx-0">
+templ Render(t Descriptor,page int) {
+	<div id="table">
+		<div class="-mx-4 sm:-mx-0">
 			<table class="min-w-full divide-y divide-gray-300">
 				<thead>
 					<tr>
 						for i,label:= range t.Header() {
 							switch i {
-								case 0:
+								case 0,1:
 									<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
 										@label
 									</th>
-								case 1,2: 
+								case 2,3: 
 									<th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">
 										@label
 									</th>
-								case 3,4:
+								case 4,5:
 									<th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">
 										@label
 									</th>
@@ -51,15 +55,15 @@ templ Render(t Descriptor) {
 						<tr>
 							for i,cell := range row {
 								switch i {
-									case 0:
+									case 0,1:
 										<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
 											@cell
 										</td>
-									case 1,2:
+									case 2,3:
 										<td class="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 sm:table-cell">
 											@cell
 										</td>
-									case 3,4:
+									case 4,5:
 										<td class="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 lg:table-cell">
 											@cell
 										</td>
@@ -76,6 +80,73 @@ templ Render(t Descriptor) {
 					}
 				</tbody>
 			</table>
+			if len(t.Body()) == 0 {
+				@emptyTable()
+			} else {
+				@templPaginator(page, len(t.Body()))
+			}
 		</div>
+	</div>
+}
+
+templ  templPaginator(page int,displayedNB int) {
+	<div class="flex items-center justify-between  border-gray-200 bg-white px-4 py-3 sm:px-6">
+		<div class="flex flex-1 justify-between sm:hidden">
+			<a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
+			<a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</a>
+		</div>
+		<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+			<div></div>
+			<div>
+				<nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+					<button
+						if page == 0 {
+							disabled
+							class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-300 ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0"
+						}
+						hx-get
+						id="paginate-previous"
+						hx-vals={ fmt.Sprintf("js:{page: %d}", page-1) }
+						hx-target="#table"
+						hx-include="#filter-section"
+						hx-push-url="false"
+						class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50  focus:z-20 focus:outline-offset-0"
+					>
+						<span class="sr-only">Previous</span>
+						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"></path>
+						</svg>
+					</button>
+					<button
+						if displayedNB < 10 {
+							disabled
+							class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-300 ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0"
+						}
+						id="paginate-next"
+						hx-get
+						hx-vals={ fmt.Sprintf("js:{page: %d}", page+1) }
+						hx-target="#table"
+						hx-header
+						hx-include="#filter-section"
+						hx-push-url="false"
+						class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+					>
+						<span class="sr-only">Next</span>
+						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"></path>
+						</svg>
+					</button>
+				</nav>
+			</div>
+		</div>
+	</div>
+}
+
+templ emptyTable() {
+	<div class="text-center mt-6 bg-indigo-50 px-4 py-20 rounded-2xl">
+		<svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+			<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path>
+		</svg>
+		<h3 class="mt-2 text-sm font-semibold text-gray-900">No Records</h3>
 	</div>
 }

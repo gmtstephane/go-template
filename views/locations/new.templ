@@ -2,15 +2,85 @@ package locations
 
 import (
 	l "github.com/gmtstephane/go-template/views/layouts"
-	i "github.com/gmtstephane/go-template/views/components/icons"
+	f "github.com/gmtstephane/go-template/views/components/form"
+	"net/http"
+	"github.com/gmtstephane/go-template/models"
 )
 
-templ New() {
+type NewLocation struct {
+	Name      string  `form:"name"`
+	Address   string  `form:"address"`
+	City      string  `form:"city"`
+	State     string  `form:"state"`
+	Country   string  `form:"country"`
+	Zipcode   int     `form:"zipcode"`
+	Latitude  float64 `form:"latitude"`
+	Longitude float64 `form:"longitude"`
+}
+
+func (l NewLocation) ToModel() models.NewLocation {
+	return models.NewLocation{
+		Name:    l.Name,
+		Address: l.Address,
+		City:    l.City,
+		State:   l.State,
+		Country: l.Country,
+		Zipcode: l.Zipcode,
+		Geog: models.Point{
+			Latitude:  l.Latitude,
+			Longitude: l.Longitude,
+		},
+	}
+}
+
+type LocationForm struct {
+	values NewLocation
+	header l.HeaderProps
+	method string
+}
+
+func Form() LocationForm {
+	return LocationForm{
+		header: l.HeaderProps{
+			Name:        "Creez un nouveau lieu",
+			Description: "Inserez un nouveau lieu dans la base de donnees",
+		},
+		method: http.MethodPost,
+	}
+}
+
+func (f LocationForm) WithValues(n NewLocation) LocationForm {
+	f.values = n
+	f.header = l.HeaderProps{
+		Name:        "Modifier le lieu",
+		Description: "Modifier les informations du lieu",
+	}
+	return f
+}
+
+func (f LocationForm) WithMethod(m string) LocationForm {
+	f.method = m
+	return f
+}
+
+func (f LocationForm) Render(ctx context.Context, w io.Writer) error {
+	return f.renderForm().Render(ctx, w)
+}
+
+templ (loc LocationForm) renderForm() {
 	@l.Dashboard() {
-		@l.Header(l.HeaderProps{
-			Icon:        i.Location(30),
-			Name:        "Nouveau Lieu",
-			Description: "Ajouter un nouveau lieu dans la base de données",
-		})
+		@l.Header(loc.header)
+		@f.Form().WithMethod(loc.method) {
+			@f.EmptySection() {
+				@f.InputText("Name", "name").Value(loc.values.Name)
+				@f.InputText("Address", "address").Value(loc.values.Address)
+				@f.InputText("City", "city").Value(loc.values.City)
+				@f.InputText("State", "state").Value(loc.values.State)
+				@f.InputText("Country", "country").Value(loc.values.Country)
+				@f.InputNumber("Zipcode", "zipcode").Value(loc.values.Zipcode)
+				@f.InputFloat("Latitude", "latitude").Value(loc.values.Latitude)
+				@f.InputFloat("Longitude", "longitude").Value(loc.values.Longitude)
+			}
+		}
 	}
 }

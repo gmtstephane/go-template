@@ -1,0 +1,94 @@
+package teams 
+
+import (
+	l "github.com/gmtstephane/go-template/views/layouts"
+	f "github.com/gmtstephane/go-template/views/components/form"
+	"net/http"
+	"github.com/gmtstephane/go-template/models"
+	"github.com/gmtstephane/go-template/views/components/form"
+)
+
+type New struct {
+	Name          string `form:"name"`
+	LocationID    int    `form:"location_id"`
+	SportID       int    `form:"sport_id"`
+	Icon          string `form:"file-upload"`
+	Championships []int  `form:"championships"`
+}
+
+func (l New) ToModel() models.NewTeam {
+	return models.NewTeam{
+		Name:          l.Name,
+		LocationID:    l.LocationID,
+		SportID:       l.SportID,
+		Icon:          l.Icon,
+		Championships: l.Championships,
+	}
+}
+
+type FormComponent struct {
+	values New
+	header l.HeaderProps
+	method string
+
+	// championships []form.KV
+	locations []form.KV
+	sports    []form.KV
+}
+
+type TeamFormProps struct {
+	Locations []form.KV
+	Sports    []form.KV
+}
+
+func Form(props TeamFormProps) FormComponent {
+	return FormComponent{
+		header: l.HeaderProps{
+			Name:        "Creez une nouvelle equipe",
+			Description: "Ajoutez une nouvelle equipe a la base de donnees",
+		},
+		method:    http.MethodPost,
+		locations: props.Locations,
+		sports:    props.Sports,
+	}
+}
+
+func (f FormComponent) WithValues(n New) FormComponent {
+	f.values = n
+	f.header = l.HeaderProps{
+		Name:        "Modifier les informations de l'equipe",
+		Description: "Modifiez les informations de l'equipe dans la base de donnees",
+	}
+	return f
+}
+
+func (f FormComponent) WithMethod(m string) FormComponent {
+	f.method = m
+	return f
+}
+
+func (f FormComponent) Render(ctx context.Context, w io.Writer) error {
+	return f.renderForm().Render(ctx, w)
+}
+
+templ (c FormComponent) renderForm() {
+	@l.Dashboard() {
+		@l.Header(c.header)
+		<div>
+			@f.Form().WithMethod(c.method) {
+				@f.EmptySection() {
+					@f.InputText("Name", "name").Value(c.values.Name)
+					@f.InputSelect("Location", "location_id", c.locations)
+					@f.InputSelect("Sport", "sport_id", c.sports).HTMX(form.HtmxLoad{
+						Trigger: "change",
+						Swap:    "outerHTML",
+						URL:     "/database/championships/components/select",
+						Target:  "#championships-component",
+					})
+					@f.InputSelect("Championships", "championships", []f.KV{}).Disabled()
+					@f.InputImage("Logo", "logo")
+				}
+			}
+		</div>
+	}
+}

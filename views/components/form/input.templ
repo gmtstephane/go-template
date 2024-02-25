@@ -1,0 +1,183 @@
+package form 
+
+import "strconv"
+import "fmt"
+
+type InputWidth string
+
+const (
+	InputWidthFull  InputWidth = "sm:col-span-6"
+	InputWidthHalf  InputWidth = "sm:col-span-3"
+	InputWidthThird InputWidth = "sm:col-span-2"
+)
+
+type InputType string
+
+const (
+	InputTypeText     InputType = "text"
+	InputTypeEmail    InputType = "email"
+	InputTypePassword InputType = "password"
+	InputTypeNumber   InputType = "number"
+	InputTypeDate     InputType = "date"
+	InputTypeTime     InputType = "time"
+	InputTypeDateTime InputType = "datetime-local"
+
+	InputTypeSelect InputType = "select"
+)
+
+type KV struct {
+	Key   string
+	Value string
+}
+
+// Component represents a component in our system.
+type InputComponent[v any] struct {
+	label      string
+	name       string
+	inputType  InputType
+	get        bool
+	widthStyle InputWidth
+	attrs      templ.Attributes
+	options    []KV
+}
+
+func input[v any](label string, name string, t InputType) InputComponent[v] {
+	c := InputComponent[v]{
+		widthStyle: InputWidthHalf,
+		inputType:  t,
+		label:      label,
+		// get:        false,
+		name:    name,
+		options: []KV{},
+		attrs:   templ.Attributes{"required": true},
+	}
+	return c
+}
+
+func InputSelect(label string, name string, values []KV) InputComponent[string] {
+	i := input[string](label, name, InputTypeSelect)
+	i.options = values
+	return i
+}
+
+func InputText(label string, name string) InputComponent[string] {
+	return input[string](label, name, InputTypeText)
+}
+
+func (f InputComponent[v]) Width(w InputWidth) InputComponent[v] {
+	f.widthStyle = w
+	return f
+}
+
+func InputNumber(label string, name string) InputComponent[int] {
+	return input[int](label, name, InputTypeNumber)
+}
+
+func InputFloat(label string, name string) InputComponent[float64] {
+	return input[float64](label, name, InputTypeNumber)
+}
+
+func (f InputComponent[v]) Step(step float64) InputComponent[v] {
+	f.attrs["step"] = strconv.FormatFloat(step, 'f', -1, 64)
+	return f
+}
+func (f InputComponent[v]) Max(max float64) InputComponent[v] {
+	f.attrs["max"] = fmt.Sprintf("%v", max)
+	return f
+}
+
+func (f InputComponent[v]) Disabled() InputComponent[v] {
+	f.attrs["disabled"] = true
+	return f
+}
+
+func (f InputComponent[v]) Multiple() InputComponent[v] {
+	f.attrs["multiple"] = true
+	return f
+}
+
+func (f InputComponent[v]) Min(min float64) InputComponent[v] {
+	f.attrs["min"] = strconv.FormatFloat(min, 'f', -1, 64)
+	return f
+}
+
+func (f InputComponent[v]) Optional() InputComponent[v] {
+	f.attrs["required"] = "false"
+	return f
+}
+
+func (f InputComponent[v]) HTMX(params HtmxLoad) InputComponent[v] {
+
+	f.attrs["hx-trigger"] = params.Trigger
+	if params.PushUrl {
+		f.attrs["hx-push-url"] = "true"
+	} else {
+		f.attrs["hx-push-url"] = "false"
+	}
+	f.attrs["hx-swap"] = params.Swap
+	f.attrs["hx-get"] = fmt.Sprintf("%v", params.URL)
+	f.attrs["hx-target"] = params.Target
+
+	return f
+}
+
+func (f InputComponent[v]) Value(t v) InputComponent[v] {
+	value := fmt.Sprintf("%v", t)
+	if value != "" && value != "0" {
+		f.attrs["value"] = value
+	}
+	return f
+}
+
+func (f InputComponent[v]) Render(ctx context.Context, w io.Writer) error {
+	return f.input().Render(ctx, w)
+}
+
+// templ (f InputComponent[v]) inputFetch() {
+// 	<div hx-trigger="load" hx-get={ path.Join(views.DatabaseRoute, views.TeamsRoute, "components", "input") }></div>
+// }
+templ (f InputComponent[v]) input() {
+	<div class={ string(f.widthStyle) } id={ fmt.Sprintf("%s-component", f.name) }>
+		<label for={ f.name } class="block text-sm font-medium leading-6 text-gray-900">{ f.label }</label>
+		<div class="mt-2 w-full">
+			if f.inputType == InputTypeSelect {
+				<select
+					if len(f.options)==0 {
+						disabled="true"
+					}
+					{ f.attrs... }
+					name={ f.name }
+					id={ f.name }
+					type="list"
+					autocomplete="off"
+					class="select   min-w-full max-w-full block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+				>
+					if f.attrs["multiple"] != true {
+						<option disabled selected></option>
+					}
+					for _, o := range f.options {
+						<option class="w-full" value={ o.Value }>{ o.Key }</option>
+					}
+				</select>
+			} else {
+				<input
+					name={ f.name }
+					id={ f.name }
+					type={ string(f.inputType) }
+					{ f.attrs... }
+					autocomplete="off"
+					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+				/>
+			}
+		</div>
+		{ children... }
+	</div>
+}
+
+type HtmxLoad struct {
+	Trigger string
+	URL     string
+	Target  string
+	PushUrl bool
+	Swap    string
+}

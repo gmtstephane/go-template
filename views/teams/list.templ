@@ -1,0 +1,88 @@
+package teams 
+
+import (
+	l "github.com/gmtstephane/go-template/views/layouts"
+	c "github.com/gmtstephane/go-template/views/components"
+	t "github.com/gmtstephane/go-template/views/components/table"
+	"github.com/gmtstephane/go-template/models"
+	"github.com/gmtstephane/go-template/views"
+	"github.com/gmtstephane/go-template/views/components/form"
+)
+
+type renderer []models.Team
+
+// Header implements the table.Renderer interface
+// It returns the header of the table
+func (r renderer) Header() []t.HeaderLabel {
+	return []t.HeaderLabel{
+		t.Label("ID"),
+		t.Label("Nom"),
+		t.Label("Image"),
+		t.Label("Sport"),
+		t.Label("Pays"),
+		t.Label("Ville"),
+		t.Label("Créé le"),
+	}
+}
+
+// Body implements the table.Renderer interface
+// It returns the body of the table
+func (r renderer) Body() (body [][]templ.Component) {
+	for _, loc := range r {
+		body = append(body, []templ.Component{
+			c.Text(loc.ID),
+			c.Text(loc.Name),
+			c.SVG(loc.Icon),
+			c.Text(loc.Sport.Name),
+			c.Text(loc.Location.Country),
+			c.Text(loc.Location.City),
+			c.Text(loc.CreatedAt.Format("02/01/2006")),
+		},
+		)
+	}
+	return body
+}
+
+templ List(list []models.Team,page int) {
+	@l.Dashboard() {
+		if views.IsHTMXFilter(ctx)==false {
+			@Header()
+		}
+		@t.Render(renderer(list), page)
+	}
+}
+
+templ Header() {
+	<div x-data="{ open: false }">
+		@l.Header(l.HeaderProps{
+			Name:        "Equipes",
+			Description: "Liste des équipes",
+			Actions: []c.ButtonComponent{
+				c.Button("Nouveau").Link(views.PathNew(views.DatabaseRoute, views.TeamsRoute)),
+				c.Button("Filtrer").Click("open = !open"),
+			},
+		})
+		@FilterSection() {
+			@form.InputText("Rechercher", "name").Width(form.InputWidthThird)
+		}
+	</div>
+}
+
+templ FilterSection() {
+	<div
+		x-show="open"
+		x-cloak
+		x-transition:enter="transition ease-out duration-100"
+		x-transition:enter-start="transform opacity-0"
+		x-transition:enter-end="transform opacity-100"
+		x-transition:leave="transition ease-in duration-75"
+		x-transition:leave-start="transform opacity-100"
+		x-transition:leave-end="transform opacity-0"
+	>
+		@form.Form().FilterMode() {
+			@form.EmptySection() {
+				{ children... }
+			}
+		}
+	</div>
+}

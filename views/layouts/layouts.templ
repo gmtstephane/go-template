@@ -1,19 +1,43 @@
 package layouts 
 
 import "github.com/gmtstephane/go-template/views/components"
+import "github.com/gmtstephane/go-template/views"
 
 const (
 	NotificationAreaID = "notification-panel"
 )
 
-templ Dashboard() {
+type DashboardComponent struct {
+	templ.Component
+}
+
+func Dashboard() DashboardComponent {
+	return DashboardComponent{}
+}
+
+func (d DashboardComponent) Render(ctx context.Context, w io.Writer) error {
+	if views.IsHTMX(ctx) {
+		return empty().Render(ctx, w)
+	}
+	return fullPage().Render(ctx, w)
+}
+
+templ empty () {
+	{ children... }
+}
+
+const PageBody = "page-body"
+
+templ fullPage() {
 	<html>
 		@head()
-		<body class="h-full w-full">
+		<body class="h-full w-full" hx-push-url="true">
 			<div class="min-h-full">
 				@components.Navbar()
 				<div class="pt-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					{ children... }
+					<div id={ PageBody } class="px-4 sm:px-6 lg:px-8 py-4">
+						{ children... }
+					</div>
 				</div>
 			</div>
 			@NotificationArea()
@@ -31,8 +55,8 @@ type HeaderProps struct {
 
 templ Header(p HeaderProps) {
 	<header>
-		<div class="px-4 sm:px-6 lg:px-8 py-4">
-			<div class="sm:flex sm:items-center">
+		<div>
+			<div class="sm:flex sm:items-center mb-8">
 				<div class="sm:flex-auto">
 					<h1 class="text-2xl font-bold leading-6 text-gray-900">{ p.Name }</h1>
 					<p class="mt-2 text-sm text-gray-700">{ p.Description }</p>
@@ -41,7 +65,6 @@ templ Header(p HeaderProps) {
 					for _,b :=range p.Actions {
 						@b
 					}
-					// <button type="button" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Nouveau</button>
 				</div>
 			</div>
 		</div>

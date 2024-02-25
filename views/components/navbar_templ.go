@@ -12,6 +12,7 @@ import "bytes"
 
 import "github.com/gmtstephane/go-template/views/components/icons"
 import "github.com/gmtstephane/go-template/internal/auth"
+import "github.com/gmtstephane/go-template/views"
 
 func userMenu() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -72,18 +73,18 @@ func Navbar() templ.Component {
 		}
 		templ_7745c5c3_Err = navbarItem(navbarItemProps{
 			Icon:        icons.Team(),
-			Link:        "teams",
-			Title:       "Team",
-			Description: "Manage teams",
+			Link:        views.Path(views.DatabaseRoute, views.TeamsRoute),
+			Title:       "Equipes",
+			Description: "Gérer les équipes dans la base de données",
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = navbarItem(navbarItemProps{
 			Icon:        icons.Location(24),
-			Title:       "Location",
-			Link:        "/admin/locations",
-			Description: "Manage locations and their details",
+			Title:       "Lieux",
+			Link:        views.Path(views.DatabaseRoute, views.LocationsRoute),
+			Description: "Gérer les lieux dans la base de données",
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -100,7 +101,7 @@ func Navbar() templ.Component {
 }
 
 type navbarItemProps struct {
-	Link        templ.SafeURL
+	Link        string
 	Icon        templ.Component
 	Title       string
 	Description string
@@ -131,19 +132,27 @@ func navbarItem(props navbarItemProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 templ.SafeURL = props.Link
+		var templ_7745c5c3_Var4 templ.SafeURL = templ.SafeURL(props.Link)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-get=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(props.Link))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#page-body\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(props.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/navbar.templ`, Line: 88, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/navbar.templ`, Line: 91, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -156,7 +165,7 @@ func navbarItem(props navbarItemProps) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(props.Description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/navbar.templ`, Line: 89, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/navbar.templ`, Line: 92, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

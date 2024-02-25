@@ -2,6 +2,7 @@ package components
 
 import "github.com/gmtstephane/go-template/views/components/icons"
 import "github.com/gmtstephane/go-template/internal/auth"
+import "github.com/gmtstephane/go-template/views"
 
 templ userMenu() {
 	<div class="relative ml-3" x-data="{ open: false }" @mousedown.outside="open = false">
@@ -55,15 +56,15 @@ templ Navbar() {
 			<div class="mx-auto grid max-w-7xl grid-cols-1 gap-2 px-6 py-6 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-0 sm:py-10 lg:grid-cols-4 lg:gap-4 lg:px-8 xl:gap-8">
 				@navbarItem(navbarItemProps{
 					Icon:        icons.Team(),
-					Link:        "teams",
-					Title:       "Team",
-					Description: "Manage teams",
+					Link:        views.Path(views.DatabaseRoute, views.TeamsRoute),
+					Title:       "Equipes",
+					Description: "Gérer les équipes dans la base de données",
 				})
 				@navbarItem(navbarItemProps{
 					Icon:        icons.Location(24),
-					Title:       "Location",
-					Link:        "/admin/locations",
-					Description: "Manage locations and their details",
+					Title:       "Lieux",
+					Link:        views.Path(views.DatabaseRoute, views.LocationsRoute),
+					Description: "Gérer les lieux dans la base de données",
 				})
 			</div>
 		</div>
@@ -71,7 +72,7 @@ templ Navbar() {
 }
 
 type navbarItemProps struct {
-	Link        templ.SafeURL
+	Link        string
 	Icon        templ.Component
 	Title       string
 	Description string
@@ -85,7 +86,9 @@ templ navbarItem(props navbarItemProps) {
 		<div>
 			<a
 				class="font-semibold text-gray-900"
-				href={ props.Link }
+				href={ templ.SafeURL(props.Link) }
+				hx-get={ props.Link }
+				hx-target="#page-body"
 			>{ props.Title }<span class="absolute inset-0"></span></a>
 			<p class="mt-1 text-gray-600">{ props.Description }</p>
 		</div>

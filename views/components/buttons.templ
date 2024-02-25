@@ -1,0 +1,56 @@
+package components
+
+func Button(t string, classes ...string) ButtonComponent {
+	return base(t, classes...)
+}
+
+type ButtonComponent struct {
+	text        string
+	classes     []string
+	link        string
+	clickAction string
+}
+
+func base(t string, classes ...string) ButtonComponent {
+	b := ButtonComponent{
+		text:    t,
+		classes: classes,
+	}
+	return b
+}
+
+func (b ButtonComponent) Link(l string) ButtonComponent {
+	b.link = l
+	return b
+}
+func (b ButtonComponent) Click(l string) ButtonComponent {
+	b.clickAction = l
+	return b
+}
+
+func (b ButtonComponent) Render(ctx context.Context, w io.Writer) error {
+	return b.render().Render(ctx, w)
+}
+
+templ (b ButtonComponent) render() {
+	if b.link != "" {
+		<a
+			hx-get={ b.link }
+			href="#"
+			hx-target="#page-body"
+			class={ "rounded-md bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", b.classes }
+		>
+			{ b.text }
+		</a>
+	} else {
+		<button
+			type="button"
+			if b.clickAction != "" {
+				@click={ b.clickAction }
+			}
+			class={ "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", b.classes, }
+		>
+			{ b.text }
+		</button>
+	}
+}
